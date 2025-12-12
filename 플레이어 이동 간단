@@ -1,0 +1,62 @@
+public class move : MonoBehaviour
+{
+    [Header("--이동 속도 및 점프 힘---")]
+    public float speed;
+    public float jumpPower;
+    public Rigidbody2D rigid;
+    public SpriteRenderer spriteRenderer;
+    public Animator animator;
+    private Vector2 moveVelocity;
+   
+    
+
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        rigid = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
+               
+
+    }
+    private void Update()
+    {
+        HandleMove();
+        HandlJump();
+
+   
+    }
+
+    void HandleMove()
+    {
+        
+        float inputX = Input.GetAxis("Horizontal");
+        
+        rigid.linearVelocityX = inputX * speed;
+
+        if (inputX > 0) spriteRenderer.flipX = false;
+        else if (inputX < 0) spriteRenderer.flipX = true;
+        
+        animator.SetFloat("move", Mathf.Abs(rigid.linearVelocityX));
+
+        //이동제한
+        Vector3 pos = transform.position;
+        if (pos.x > 2.8f) pos.x = 2.8f;
+        if (pos.x < -2.8f) pos.x = -2.8f;
+        transform.position = pos;
+    }
+    void HandlJump()
+    {
+        if (Input.GetButtonDown("Jump") == true)
+        {
+            if(rigid.IsTouchingLayers() == true)
+            {
+                rigid.AddForceY(jumpPower, ForceMode2D.Impulse);
+                animator.SetTrigger("jump");
+            }
+            
+        }
+
+    }
+}
