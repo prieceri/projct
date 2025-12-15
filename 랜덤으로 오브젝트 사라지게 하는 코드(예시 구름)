@@ -1,0 +1,37 @@
+/// <summary>
+/// 구름 웨이브 5개의 자식 구름 중에 랜덤하게 몇 개를 골라 비활성화 시킨다.
+/// </summary>
+
+
+public class Clloudwave : MonoBehaviour
+{
+
+    [Header("----구름 오브젝트-----")]
+    public GameObject[] Clouds;
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        Shuffle();
+        //1. 0~3 랜덤한 정수 생성
+        //2. 해당 개수만큼 무작위 순서로 구름 오브젝트 비활성화
+
+        int CloudNum = Random.Range(0, 4);
+        for (int i = 0; i < Clouds.Length; i++)
+        {
+            if (i < CloudNum) Clouds[i].SetActive(false);
+            //i번째 구름 비활성화
+        }
+
+    }
+    void Shuffle()
+    {
+        for (int i = 0; i < Clouds.Length; i++)
+        {
+            //랜덤 번호 생성
+            int randomIndex = Random.Range(0, Clouds.Length);
+            //현재 번호 게임오브젝트에 임시 저장
+            GameObject temp = Clouds[i];
+            Clouds[i] = Clouds[randomIndex];
+            Clouds[randomIndex] = temp;
+        }
+    }
