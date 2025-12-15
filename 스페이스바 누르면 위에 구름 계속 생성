@@ -1,0 +1,42 @@
+public class CloudWaveSpanwer : MonoBehaviour
+{
+    [Header("----- 구름 웨이브 프리팹 -----")]
+    public GameObject CloudWavePrefab;
+
+    [Header("----- 생성된 구름 수 -----")]
+    public int SpawnCount;
+
+    [Header("----- 구름 사이 y 간격 -----")]
+    public float HeightIncrement;
+
+
+    private void Start()
+    {
+        for(int i = 0; i < 10; i++)
+        {
+            SpawnCloudWave();
+        }
+    }
+
+    public void SpawnCloudWave()
+    {
+        // CloudWavePrefab 게임오브젝트를 복제해서 씬에 생성한 뒤
+        // 그 복제본을 cloudWave 변수로 가리킨다.
+        GameObject cloudWave = Instantiate(CloudWavePrefab, transform);
+
+        // 복제본 cloudWave의 위치를 설정
+        cloudWave.transform.position = new Vector3(0.0f, SpawnCount * HeightIncrement, 0.0f);
+
+        // 생성된 구름 수 업데이트
+        SpawnCount++;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Space) == true)
+        {
+            SpawnCloudWave();
+        }
+    }
+}
