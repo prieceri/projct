@@ -1,0 +1,94 @@
+public class Cat : MonoBehaviour
+{
+    [Header("----- 컴포넌트 -----")]
+    public Rigidbody2D Rigid;
+    public SpriteRenderer Renderer;
+    public Animator Anim;
+
+    [Header("----- 좌우 이동 -----")]
+    [Tooltip("좌우 이동 속력")]
+    public float MoveSpeed;
+
+    [Header("----- 점프 -----")]
+    [Tooltip("점프 시 적용할 힘 크기")]
+    public float JumpPower;
+
+    // Update is called once per frame
+    void Update()
+    {
+        HandleMove();
+        HandleJump();
+    }
+
+
+    /// <summary>
+    /// 이동을 다루는 함수
+    /// </summary>
+    void HandleMove()
+    {
+        // Input.GetKey(), GeyKeyDown(), GetKeyUp()
+
+        // Input.GetAxis(): InputManager에 정의된 입력 값을 가져오는 함수
+
+        // X 방향 이동 입력 값 가져오기(-1 ~ 1 사이)
+        float inputX = Input.GetAxis("Horizontal");
+
+        //Debug.Log($"좌우 이동 입력: {inputX}");
+
+        // 1) Transform 이동 방식
+        // X 방향으로 이동
+        //transform.Translate(inputX * MoveSpeed * Time.deltaTime, 0, 0);
+
+        // 2) Rigidbody2D 이동 방식
+        Rigid.linearVelocityX = inputX * MoveSpeed;
+
+        // 스프라이트 렌더러 바라보는 방향 설정
+        if (inputX > 0)
+        {
+            // 스프라이트 렌더러의 Flip X 값을 false
+            Renderer.flipX = false;
+        }
+        else if (inputX < 0)
+        {
+            // 스프라이트 렌더러의 Flip X 값을 true
+            Renderer.flipX = true;
+        }
+
+        // 애니메이터 패러미터 설정
+        Anim.SetFloat("MoveSpeed", Mathf.Abs(Rigid.linearVelocityX));
+
+
+        // 이동 제한
+        // 1) transform의 position 값 가져오기
+        Vector3 pos = transform.position;
+
+        // 2) pos의 x 값을 -2.5 ~ 2.5 사이로 제한
+        if (pos.x > 2.5f)
+        {
+            pos.x = 2.5f;
+        }
+        if (pos.x < -2.5f)
+        {
+            pos.x = -2.5f;
+        }
+
+        // 3) 수정된 pos 값을 실제 위치에 적용
+        transform.position = pos;
+    }
+
+    /// <summary>
+    /// 점프를 다루는 함수
+    /// </summary>
+    void HandleJump()
+    {
+        // 유저가 점프 키를 이번 프레임에 눌렀으면
+        if (Input.GetButtonDown("Jump") == true)
+        {
+            // 리지드바디에 닿아 있는 콜라이더가 있는 경우
+            if(Rigid.IsTouchingLayers() == true)
+            {
+                // 점프
+                Jump();
+            }
+        }
+    }
