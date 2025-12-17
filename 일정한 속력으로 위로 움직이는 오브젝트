@@ -26,3 +26,20 @@ public class Water : MonoBehaviour
         }
     }
 }
+/// <summary>
+/// 게임오브젝트를 일정한 속력으로 위에서 아래로 이동하는 역할
+/// </summary>
+public class Arrow : MonoBehaviour
+{
+    [Header("----- 이동 속력 -----")]
+    public float Speed;
+
+    // Update is called once per frame
+    void Update()
+    {
+        //transform.Translate(0, -Speed * Time.deltaTime, 0);
+
+        transform.Translate(Vector3.down * Speed * Time.deltaTime);
+    }
+}
+
