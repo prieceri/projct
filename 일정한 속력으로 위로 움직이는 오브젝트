@@ -1,0 +1,28 @@
+/// <summary>
+/// 일정한 속력으로 위로 자동으로 움직이다가
+/// 플레이어 캐릭터와 닿으면 게임 오버
+/// </summary>
+public class Water : MonoBehaviour
+{
+    [Header("----- 이동 속력 -----")]
+    public float Speed;
+
+    // Update is called once per frame
+    void Update()
+    {
+        //transform.Translate(0, Speed * Time.deltaTime, 0);
+
+        // 방향 벡터 * 크기 방식
+        transform.Translate(Vector3.up * Speed * Time.deltaTime);
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        // 트리거한 상대 콜라이더 게임오브젝트의 태그가 "CloudWave"이면
+        if(collision.gameObject.tag == "CloudWave")
+        {
+            // 상대 콜라이더 게임오브젝트를 제거
+            Destroy(collision.gameObject);
+        }
+    }
+}
