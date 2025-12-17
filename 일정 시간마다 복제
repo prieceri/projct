@@ -1,0 +1,40 @@
+/// <summary>
+/// Arrow 게임오브젝트를 일정 시간마다 복제 생성하는 역할
+/// </summary>
+public class ArrowSpawner : MonoBehaviour
+{
+    // 1. 일정 시간마다
+    // 2. Arrow 프리팹을 복제 생성
+    // 3. Arrow 복제본 위치 설정
+
+    [Header("----- 화살표 프리팹 -----")]
+    public GameObject ArrowPrefab;
+
+    [Header("----- 화살표 생성 위치 게임오브젝트 -----")]
+    public GameObject SpawnPoint;
+
+    [Header("----- 화살표 생성 간격 시간(초) -----")]
+    public float SpawnSpan;
+
+    [Header("----- 타이머 -----")]
+    public float Timer;
+
+    private void Update()
+    {
+        Timer += Time.deltaTime;
+        if(Timer > SpawnSpan)
+        {
+            Timer = 0;
+            SpawnArrow();
+        }
+    }
+
+    public void SpawnArrow()
+    {
+        // ArrowPrefab를 자신 게임오브젝트의 자식으로 복제 생성
+        GameObject arrow = Instantiate(ArrowPrefab, transform);
+
+        // 복제본 화살표의 위치 설정
+        arrow.transform.position = SpawnPoint.transform.position;
+    }
+}
