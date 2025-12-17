@@ -42,4 +42,27 @@ public class Arrow : MonoBehaviour
         transform.Translate(Vector3.down * Speed * Time.deltaTime);
     }
 }
+//게임 오브젝트를 일정한 속력으로 양옆으로 이동하는 역할
+public class Arrowmove : MonoBehaviour
+{
+    [Header("---이동속도 및 거리---")]
+    public float speed;   // 이동 속도
+    public float distance;  // 좌우 이동 거리
+
+   // private Vector3 startPos;
+    private Vector3 localStartPos;
+
+    void Start()
+    {
+        //startPos = transform.position;
+        // 카메라 기준 위치 저장
+        localStartPos = transform.localPosition;
+    }
+
+    void Update()
+    {
+        float x = Mathf.Sin(Time.time * speed) * distance;
+        transform.localPosition = localStartPos + new Vector3(x, 0f, 0f);
+    }
+}
 
