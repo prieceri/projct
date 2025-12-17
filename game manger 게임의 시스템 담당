@@ -1,0 +1,68 @@
+public class GameManager : MonoBehaviour
+{
+    [Header("----- 스탯 -----")]
+    public int MaxHp;           // 최대 체력
+    public int CurrentHp;       // 현재 체력
+
+    [Header("----- UI -----")]
+    [Tooltip("hp 이미지 게임오브젝트 배열")]
+    public GameObject[] HpImges;
+    [Tooltip("현재 기록 텍스트")]
+    public Text HightText;
+
+    public float Hight;
+
+    /// <summary>
+    /// 체력을 더하는 함수
+    /// </summary>
+    /// <param name="amount">추가 양</param>
+    public void AddHp(int amount)
+    {
+        // 1) 체력값 제한 if문 방식
+        //CurrentHp += amount;
+        //if(CurrentHp > MaxHp)
+        //{
+        //    CurrentHp = MaxHp;
+        //}
+        //if(CurrentHp < 0)
+        //{
+        //    CurrentHp = 0;
+        //}
+
+        // 2) 체력값 제한 수학 함수 방식
+        CurrentHp = Mathf.Clamp(CurrentHp + amount, 0, MaxHp);
+
+        //체력 ui 갱신
+        /*for (int i = 0; ; i < HpImges.Length; i++)
+        {
+            if(CurrentHp < 0) Image
+            else(CurrentHp > 0)
+        }
+        */
+
+            if (CurrentHp <= 0)
+            {
+                EndGame();
+            }
+    }
+
+    public void SetHight(float height)
+    {
+        if(Hight < height)
+        {
+            Hight = height;
+            //오브젝트 텍스트에 직접 수정함
+            HightText.text = $"높이: {Hight:F0}m";
+        }
+    }
+
+    /// <summary>
+    /// 게임을 끝내는 함수
+    /// </summary>
+    public void EndGame()
+    {
+        Debug.Log("게임 오버!");
+
+        Time.timeScale = 0;
+    }
+}
