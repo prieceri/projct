@@ -1,24 +1,27 @@
 
 카메라 플레이어 이동 메커니즘
-public class camera : MonoBehaviour
+/// <summary>
+/// 플레이어 캐릭터(고양이) 게임오브젝트를 y 방향으로만 추적하는 역할
+/// </summary>
+public class CameraCtrl : MonoBehaviour
 {
-    [Header("---추적---")]
+    [Header("----- 추적 대상 -----")]
     public GameObject Target;
 
-    // 다른 모든 update()가 실행된 뒤에 실행되는 update()
-    // 일반적으로 카메라를 다루는 등 다른 작업이 마무리된 뒤에 updat()가 필요한경우 Latupdate를 쓴다
-    void LatUpdate()
+    // LateUpdate(): 다른 모든 Update()가 실행된 뒤에 실행되는 Update()
+    // -> 일반적으로 카메라를 다루는 등 다른 작업이 마무리된 뒤에 Update()가 필요한 경우
+    void LateUpdate()
     {
-        //플레이어를 따라다니며 y축으로만 이동
-        
-        //타겟의 위치값 가져오기
+        // 타겟의 위치값 가져오기
         Vector3 targetPos = Target.transform.position;
-        //게임 오브젝트의 위치값 가져오기
+
+        // 자신 게임오브젝트의 위치값 가져오기
         Vector3 pos = transform.position;
 
-        //자신 게임오브젝트 위치값의 y값을 타겟의 위치값을 y값으로 설정
+        // 자신 게임오브젝트 위치값의 y값을 타겟의 위치값 y값으로 설정
         pos.y = targetPos.y;
-        //수정한 위치값을 실제 위치로 이동 
+
+        // 수정한 위치값을 실제 위치에 적용
         transform.position = pos;
     }
 }
