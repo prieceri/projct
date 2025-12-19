@@ -1,0 +1,30 @@
+// <summary>
+    /// 최고 기록을 로컬에 저장하는 함수
+    /// </summary>
+    public void SaveBestRecord()
+    {
+        // 플레이어 데이터 최고 기록을 로컬(컴퓨터, 핸드폰 등 유저의 기기)에 저장
+        // "BestRecord"라는 이름으로 PlayerData.BestRecord 값을 저장
+        PlayerPrefs.SetFloat("BestRecord", PlayerData.BestRecord);
+
+        PlayerPrefs.Save();
+    }
+    /// <summary>
+    /// 최고 기록을 로컬에서 불러오는 함수
+    /// </summary>
+    public void LoadBestRecord()
+    {
+        // "BestRecord"라고 이름 붙은 float 값을 가져온다.
+        // 없으면 0을 가져온다.
+        PlayerData.BestRecord = PlayerPrefs.GetFloat("BestRecord", 0);
+    }
+
+
+    /// <summary>
+    /// 최고 기록 텍스트를 갱신하는 함수
+    /// </summary>
+    public void UpdateBestText()
+    {
+        // 최고 높이 기록 텍스트 갱신
+        BestText.text = $"최고 기록: {PlayerData.BestRecord:F0}m";
+    }
