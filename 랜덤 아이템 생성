@@ -1,0 +1,23 @@
+[Header("----- 물고기 y 방향 간격 -----")]
+public float FishOffsetY;
+
+[Header("----- 물고기 생성 확률 -----")]
+public float FishRate;
+
+    // 0.0f ~ 1.0f 사이 랜덤한 실수값 계산
+    //float randomValue = Random.Range(0.0f, 1.0f);
+    float randomValue = Random.value;
+
+    // 랜덤한 실수의 값이 FishRate보다 작으면
+    // FishRate 확률로
+    if (randomValue < FishRate)
+    {
+        // 물고기 프리팹 복제본 생성
+        GameObject fish = Instantiate(FishPrefab);
+
+        // 복제본 물고기의 위치를 구름의 위치로 설정
+        fish.transform.position = Clouds[i].transform.position;
+
+        // 복제본 물고기의 위치를 구름 약간(FishOffsetY) 위로 설정
+        fish.transform.Translate(0, FishOffsetY, 0);
+    }
