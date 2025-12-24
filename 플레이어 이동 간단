@@ -6,20 +6,8 @@ public class move : MonoBehaviour
     public Rigidbody2D rigid;
     public SpriteRenderer spriteRenderer;
     public Animator animator;
-    private Vector2 moveVelocity;
    
     
-
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        rigid = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        animator = GetComponent<Animator>();
-               
-
-    }
     private void Update()
     {
         HandleMove();
