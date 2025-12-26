@@ -1,0 +1,62 @@
+ public GameObject AttackPoint; //공격 지점
+  public float Damage;        // 데미지 관리
+  public float MaxHP;     //최대 체력
+  public float CurryHP;   //현재 체력
+  public float Range;  //사정거리
+  public float AttakTime;     //공격 쿨타임
+  public LayerMask TagetLayerMask;    //공격 가능한 레이어마스크
+
+#region ----- 공격 -----
+ /// <summary>
+ /// 공격 기능을 다루는 함수
+ /// </summary>
+ void HandleAttack()
+ {
+     if(Input.GetButtonDown("Fire1") == true)
+     {
+         Attack();
+     }
+ }
+
+
+ /// <summary>
+ /// 공격하는 함수
+ /// </summary>
+ void Attack()
+ {
+     
+     Anim.SetTrigger("OnAttack");
+
+     //공격 레이저 시작지점
+     Vector2 origin = AttackPoint.transform.position;
+     Vector2 dir;
+     if (Renderer.flipX == false)
+         dir = Vector2.right;
+     else
+         dir = Vector2.left;
+
+     RaycastHit2D hit = Physics2D.Raycast(
+         origin, dir, 1.0f, TagetLayerMask);
+     //hit 되면 Enemy 컴포넌트를 가져와서 데이터 입력
+     //hit.collider: 레이에 감지된 콜라이더 컴포넌트
+     if (hit == true)
+     {
+         Enemy enemy = hit.collider.GetComponent<Enemy>();
+        
+         if(enemy != null)
+         {
+             enemy.TakeHit(Damage);
+         }
+#endregion
+             #region ---피격---
+public void TakeHit(float damage)
+{
+    CurryHP = Mathf.Min(CurryHP - damage, MaxHP);
+    if (CurryHP <= 0)
+    {
+        Debug.Log("사망");
+    }
+}
+
+#endregion
+ }
