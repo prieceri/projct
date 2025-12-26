@@ -1,0 +1,40 @@
+[Header("----스탯----")]
+public float maxHP;
+public float CurryHP;
+public float Damage;
+
+
+/// <summary>
+ /// 피격받는 함수
+ /// </summary>
+ /// <param name="damage">데미지</param>
+ public void TakeHit(float damage)
+ {
+     CurryHP -= damage;
+     if(CurryHP > maxHP)
+     {
+         CurryHP = maxHP;
+     }
+
+     //음수 대미지가 들어와서 현재 체력이 최대 최력보다 커지는걸 방지
+     CurryHP = Mathf.Min(CurryHP - damage, maxHP);
+     
+     //현재 체력이 0이하면
+     if(CurryHP <= 0)
+     {
+         Debug.Log("사망함");
+     }
+ }
+
+ private void OnCollisionEnter2D(Collision2D collision)
+ {
+     if(collision.gameObject.tag == "Hero" )
+     {
+         Hero hero = collision.gameObject.GetComponent<Hero>();
+
+         if(hero != null )
+         {
+             hero.TakeHit(Damage);
+         }
+     }
+ }
