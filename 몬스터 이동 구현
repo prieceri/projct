@@ -1,0 +1,57 @@
+public class Enemy : MonoBehaviour
+{
+    [Header("----- 컴포넌트 -----")]
+    public Rigidbody2D Rigid;       // 리지드바디2D
+    public Animator Anim;           // 애니메이터
+    public GameObject RendererObj;  // 렌더러 게임오브젝트
+    public GameObject GroundSensor; // 지면 감지 포인트
+
+    [Header("----- 이동 -----")]
+    public float MoveSpeed;         // 이동 속력
+    public int Direction;           // 이동 방향(+1 우측, -1 좌측)
+    public LayerMask GroundLayerMask;   // 지면(땅) 레이어 마스크
+
+    private void Update()
+    {
+        // 정면에 땅이 있는지 여부 계산
+        // 레이캐스트: 가상의 레이저 광선을 발사하여 겹쳐지는 콜라이더가 있는지 여부를 확인
+        bool hasFrontGround = Physics2D.Raycast(
+            GroundSensor.transform.position,
+            Vector2.down,
+            1.0f,
+            GroundLayerMask);
+
+        // 정면에 땅이 없었으면
+        if(hasFrontGround == false)
+        {
+            Direction *= -1;
+        }
+
+        // 이동 속력과 방향을 리지드바디에 적용
+        Rigid.linearVelocityX = MoveSpeed * Direction;
+
+        // 애니메이터에 이동 속력 적용
+        Anim.SetFloat("MoveSpeed", Mathf.Abs(Rigid.linearVelocityX));
+
+        // 바라보는 방향 설정
+        // 스케일 값 가져오기
+        Vector3 scale = RendererObj.transform.localScale;
+
+        // 스케일 값 변경
+        scale.x = Direction;
+
+        // 스케일 값 적용
+        RendererObj.transform.localScale = scale;
+    }
+
+
+    private void OnDrawGizmos()
+    {
+        // 지면 감지 게임오브젝트가 연결되어 있지 않으면 종료
+        if (GroundSensor == null) return;
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(GroundSensor.transform.position,
+            GroundSensor.transform.position + Vector3.down);
+    }
+}
