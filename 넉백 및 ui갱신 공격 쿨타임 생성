@@ -1,0 +1,157 @@
+****hpbar ui 갱싱***** 
+
+//따로 스크립트 만들어서 만들기 GameManger
+[Header("UI")]
+public Image Hpbar;  //적용할 이미지
+
+public void UpdateHpbar(float CurrentHp, float MaxHp)
+{
+    Hpbar.fillAmount = CurrentHp / MaxHp;  //fillAmount는 내가 선택한 가로방식으로 줄어드는 canvas이고 따로 하고 싶으면 바꾸면 됨
+}
+
+//player스크립트
+[Header("------GM-----")]
+public Image HpBar;
+
+ public void TakeDamage(float damage)
+ {
+     CurrentHp = Mathf.Min(CurrentHp - damage, MaxHp);
+
+     if (CurrentHp <= 0)
+     {
+         Debug.Log("주인공 사망!");
+     }
+     //체력바 ui갱신
+     GM.UpdateHpbar(CurrentHp, MaxHp);
+ }
+
+
+//몬스터는 따로 ui를 지정해야 되는데 위의 GameManger으로 쓴 Hpbar.fillAmount = CurrentHp / MaxHp; 이걸 몬스터 소스에다가 player와 똑같은 자리에 넣는다.
+//몬스터 canvas엔 rander mode에 world space로 지정하고 써야 하나의 컴포넌트로 만들어져서 canvas와 따로 움직임.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+**** 피격 받으면 넉백 받는 함수****
+
+
+public enum HeroStats
+  {    
+    Normal,
+    KnockBack,
+  }
+
+[Header("----상태----")]
+public HeroStats stats;     //주인공 상태
+public float Damageback;    // 넉백 받는 힘
+public float DamagebackTime;    //넉백 지속 시간
+
+
+ private void Update()
+ {
+     switch(stats)
+     {
+         case HeroStats.Normal:  //상태가 노말일때 할 동작
+             HandleMove();
+             HandleJump();
+             HandleAttack();
+             break;
+         case HeroStats.KnockBack: //상태가 넉백상태일때 할 동작
+             Handleknockback();
+             break;
+     }
+ }
+
+
+ public void TakeHit(float damage, Vector2 point, float knockbackForce) //함수 오버로딩을 쓸려고 만든 똑같은 함수(변수가 다르면 이걸 쓴다)
+ {
+     TakeDamage(damage);
+     knockback(point, knockbackForce);
+ }
+
+
+ public void TakeHit(float damage)  //위와 똑같은 함수인데 데미지 변수만 받으면 이 함수를 실행함
+ {
+     TakeDamage(damage);
+ }
+
+
+ public void TakeDamage(float damage)  //원래 takehit쪽 함수였는데 따로 쓸려고 따로 저장함
+ {
+     CurrentHp = Mathf.Min(CurrentHp - damage, MaxHp);
+
+     if (CurrentHp <= 0)
+     {
+         Debug.Log("주인공 사망!");
+     }
+     //체력바 ui갱신
+     GM.UpdateHpbar(CurrentHp, MaxHp);
+ }
+
+ public void knockback(Vector2 point, float DamagebackForce)
+ {
+     stats = HeroStats.KnockBack;
+     DamagebackTime = Damageback;
+
+     int dir = 1;
+     if (transform.position.x < point.x)
+     {
+         dir = -1;   
+     }
+     else
+     {
+         dir = 1;
+     }
+     Rigid.AddForceX(dir * DamagebackForce, ForceMode2D.Impulse);
+ }
+
+ void Handleknockback()  //상태변화 함수
+ {
+     DamagebackTime -= Time.deltaTime;
+     if( DamagebackTime <= 0 )
+     {
+         stats = HeroStats.Normal; //넉백 시간이 끝나면 노말상태로 스위칭
+     }
+ }
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+***** 공격 쿨타임 생성 소스*****
+
+
+ [Header("----- 공격 -----")]
+public float AttackcoolTime;    //공격 쿨타임
+public float AttackTimer;       //공격 타이머
+
+void HandleAttack()
+{
+    /*
+    //타임이 무한이 커지는걸 방지해주는 소스(컴퓨터를 진짜 오래키지 않는 이상 문제없음 안써도 무방함)
+    if (AttackTimer <= AttackcoolTime)
+    {
+        AttackTimer += Time.deltaTime;
+    }
+    */
+
+    //공격 타이머 계산
+    AttackTimer += Time.deltaTime;
+    if (Input.GetButtonDown("Fire1") == true)
+    {
+      if (AttackTimer > AttackcoolTime)
+      {
+        AttackTimer = 0;
+        Attack();
+      }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
