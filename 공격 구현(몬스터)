@@ -26,9 +26,10 @@ public float Damage;
      }
  }
 
+//플레이어 콜라이더가 접촉하면 데미지를 받는 코드
  private void OnCollisionEnter2D(Collision2D collision)
  {
-     if(collision.gameObject.tag == "Hero" )
+     if(collision.gameObject.tag == "Hero" ) //tag가 hero인 콜라이더만 호출됨
      {
          Hero hero = collision.gameObject.GetComponent<Hero>();
 
