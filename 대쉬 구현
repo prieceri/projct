@@ -1,0 +1,82 @@
+public float DashSpeed;     // 대쉬 속력
+public float DashTimer;     // 대쉬 시간
+public float DashDuration;  // 대쉬 지속시간
+public float DashcoolTime;  // 대쉬 쿨타임
+
+private void Update()
+{
+  case HeroState.Nomal:
+      EndDash();
+      break;
+  case HeroState.Dash:
+     UpdateDash();
+     break;
+}
+
+ #region ----대쉬-----
+ void HandleDash()
+ {
+     //대쉬 쿨타
+     if (DashTimer <= DashcoolTime)
+     {
+             DashTimer += Time.deltaTime;
+     }
+
+     if (Input.GetButtonDown("Dash") == true)
+     {
+         if (DashTimer > DashcoolTime)
+         {
+             DashTimer = 0;
+             StartDash();
+         }
+     }
+     
+ }
+
+ void UpdateDash()
+ {
+     if(DashTimer > 0)
+     {
+         DashTimer -= Time.deltaTime;
+         if (DashTimer <= 0)
+             EndDash();
+     }
+     
+ }
+   
+ private void StartDash()
+ {
+     State = HeroState.Dash;
+
+     Anim.SetTrigger("OnDash");
+
+     //대쉬 타이머 초기화
+     DashTimer = DashDuration;
+
+     //리지드바디 좌우 방향 속력을 대쉬 속력으로 설정
+     /*
+     int dir = 1;
+     if (Renderer.flipX == false)
+     {
+         dir = -1;
+     }
+     else
+     {
+         dir = 1;
+     }
+     */
+
+     int dir = Renderer.flipX ? -1 : 1;
+     Rigid.linearVelocityX = dir * DashSpeed;
+
+     //일시적으로 Layer를 Enemy로 바꿔서 무적상태로 만듬
+     gameObject.layer = LayerMask.NameToLayer("Enemy");
+
+ }
+ void EndDash()
+ {
+     State = HeroState.Normal;
+     Rigid.linearVelocityX = 0;
+     gameObject.layer = LayerMask.NameToLayer("Hero");
+
+ }
