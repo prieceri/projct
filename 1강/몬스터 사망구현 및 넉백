@@ -1,0 +1,132 @@
+public enum EnemyState
+{
+    Normal,     // 기본 상태
+    Knockback,  // 넉백 상태
+    Dead,       // 사망 상태
+}
+
+public float KnockbackDuration;     // 넉백 지속 시간
+public float KnockbackTimer;        // 넉백 타이머
+public float DeadDuration;          // 사망 지속 시간
+public float DeadTimer;             // 사망 타이머
+public float KnockbackForce;    // 넉백 힘
+ 
+
+private void Update()
+    {
+        switch (State)
+        {
+            case EnemyState.Normal:
+                // GroundLayerMask에 해당하는 레이어 콜라이더와
+                // 닿아 있는지 여부
+                if(Rigid.IsTouchingLayers(GroundLayerMask) == true)
+                {
+                    HandleMove();
+                }
+                break;
+            case EnemyState.Knockback:
+                HandleKnockback();
+                break;
+            case EnemyState.Dead:
+                HandleDead();
+                break;
+        }
+    }
+/// <summary>
+    /// 피격을 받는 함수
+    /// </summary>
+    /// <param name="damage">대미지</param>
+    /// <param name="point">충돌 지점</param>
+    /// <param name="knockbackForce">넉백 힘</param>
+    public void TakeHit(float damage, Vector2 point, float knockbackForce)
+    {
+        Knockback(point, knockbackForce);
+        TakeDamage(damage);
+    }
+
+
+    /// <summary>
+    /// 대미지를 입는 함수
+    /// </summary>
+    /// <param name="damage">대미지</param>
+    public void TakeDamage(float damage)
+    {
+        // 음수 대미지가 들어와서 현재 체력이 최대 체력보다 커지는 경우 제한
+        CurrentHp = Mathf.Min(CurrentHp - damage, MaxHp);
+
+        // 현재 체력이 0 이하이면
+        if (CurrentHp <= 0)
+        {
+            // 사망 애니메이션 재생
+            Anim.SetTrigger("OnDead");
+
+            // 사망 상태로 변경
+            State = EnemyState.Dead;
+
+            // 사망 타이머 충전
+            DeadTimer = DeadDuration;
+
+            // 콜라이더 off
+            Collider.enabled = false;
+
+            // 리지드바디 off
+            Rigid.simulated = false;
+        }
+
+        // 체력 바 UI 갱신
+        HpBar.fillAmount = CurrentHp / MaxHp;
+    }
+
+    /// <summary>
+    /// 넉백을 당하는 함수
+    /// </summary>
+    /// <param name="point">충돌 지점</param>
+    /// <param name="knockbackForce">넉백 힘</param>
+    public void Knockback(Vector2 point, float knockbackForce)
+    {
+        // 넉백 상태로 변경
+        State = EnemyState.Knockback;
+
+        // x 방향 이동 속력 초기화
+        Rigid.linearVelocityX = 0;
+
+        // 넉백 타이머 초기화
+        KnockbackTimer = KnockbackDuration;
+
+        // 넉백 방향
+        int dir = 1;
+        if (transform.position.x < point.x)
+        {
+            dir = -1;
+        }
+        else
+        {
+            dir = 1;
+        }
+
+        // 넉백 힘 적용
+        Rigid.AddForceX(dir * knockbackForce, ForceMode2D.Impulse);
+    }
+
+    /// <summary>
+    /// 넉백 상태를 다루는 함수
+    /// </summary>
+    void HandleKnockback()
+    {
+        KnockbackTimer -= Time.deltaTime;
+        if (KnockbackTimer < 0)
+        {
+            // 기본 상태로 변경
+            State = EnemyState.Normal;
+        }
+    }
+
+    void HandleDead()
+    {
+        DeadTimer -= Time.deltaTime;
+        if(DeadTimer < 0)
+        {
+            // 자신 게임오브젝트 파괴
+            Destroy(gameObject);
+        }
+    }
