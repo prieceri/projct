@@ -1,0 +1,38 @@
+public bool IsGround;       // 지면에 닿아 있는지 여부 확인
+public ContactPoint2D[] contacts = new ContactPoint2D[5];   //닿아있는 물체를 5개까지 접점정보를 저장함
+
+void HandleJump()
+ {
+     if(Input.GetButtonDown("Jump") == true)
+     {
+         if(IsGround == true)
+         {
+             Jump();
+         }
+     }
+ }
+
+ void CheckIsGround()
+ {
+     IsGround = false;   
+     // 접촉 정보가 0개 초과이면
+     //contacts 배열에 각 적촉 정보를 넣어준다.
+     int count = Rigid.GetContacts(contacts);
+     if(count > 0)
+     {
+         for (int i = 0; i < count; i++)
+         {
+             // 접촉 면의 노멀 벡터의 y 값이 0.7 보다 크면
+             // 경사로가 45도 이하인 면에 닿아있으면
+             if (contacts[i].normal.y > 0.7f)
+             {
+                 IsGround = true;
+                 break;
+             }
+         }
+     }
+     else
+         IsGround = false;
+     
+     
+ }
