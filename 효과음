@@ -1,0 +1,41 @@
+public enum sfxType
+{
+    Attack,
+    Hit,
+}
+public class GameManager : MonoBehaviour
+{
+  [Header("----컴포넌트----")]
+  public AudioSource SfxSound;    //효과음 재생 오디오소스
+
+  [Header("----리소스----")]
+  public AudioClip[] SfxClips;    //효과음 클립 소스
+}
+    public void PlaySfx(sfxType sfxType)
+    {
+        //배열에서 효과음 클립 가져오기
+        AudioClip clip = SfxClips[(int)sfxType];
+
+        //효과음 1회재생
+        SfxSound.PlayOneShot(clip);
+
+        Debug.Log($"{sfxType} 효과음 재생중");
+    }
+}
+
+---------------------------------------------------------------------------
+player 코드
+-공격- 
+void Attack()
+ {
+  //공격 사운드 재생
+  Manager.PlaySfx(sfxType.Attack);
+  }
+
+-피격-
+public void TakeHit(float damage, Vector2 point, float knockbackForce)
+{
+    TakeDamage(damage);
+    Knockback(point, knockbackForce);
+    Manager.PlaySfx(sfxType.Hit);
+}
