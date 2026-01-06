@@ -1,0 +1,442 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public enum HeroState
+{
+    Normal,     // 기본 상태
+    Knockback,  // 넉백 상태
+    Dead,       // 사망 상태
+    Dash,       // 대쉬무적 상태
+}
+
+
+/// <summary>
+/// 주인공 캐릭터 담당.
+/// 동작 - 이동, 점프, 공격, 피격
+/// 상태
+/// 1) 기본 - 이동, 점프, 공격, 피격 동작 가능
+/// 2) 넉백 - 다른 동작 불가능
+/// 3) 대시 등등
+/// </summary>
+public class Hero : MonoBehaviour
+{
+    [Header("------Ui------")]
+    public Image EnergyBar;
+    public CanvasGroup CanvasGroup;
+
+    [Header("----- 매니저 -----")]
+    public GameManager Manager;
+
+    [Header("----- 컴포넌트 -----")]
+    public Rigidbody2D Rigid;       // 리지드바디2D
+    public SpriteRenderer Renderer; // 스프라이트렌더러
+    public Animator Anim;           // 애니메이터
+    public GameObject AttackPoint;  // 공격 지점
+    public Collider2D Collider;
+    
+
+    [Header("----- 상태 -----")]
+    public HeroState State;     // 주인공 상태
+
+    [Header("----- 이동 -----")]
+    public float MoveSpeed;     // 이동 속력
+    public float DashSpeed;     // 대쉬 속력
+    public float DashTimer;     // 대쉬 시간
+    public float DashDuration;  // 대쉬 지속시간
+    public float DashcoolTime;  // 대쉬 쿨타임
+
+    [Header("----- 점프 -----")]
+    public float JumpPower;     // 점프력
+    public bool IsGround;       // 지면에 닿아 있는지 여부 확인
+    public ContactPoint2D[] contacts = new ContactPoint2D[5];
+
+    [Header("----- 공격 -----")]
+    public LayerMask TargetLayerMask;   // 공격 가능한 레이어 마스크
+    public float Damage;        // 공격력
+    public float KnockbackForce;    // 넉백 힘
+    public float Range;         // 사정거리
+    public float AttackCooltime;        // 공격 쿨타임
+    public float AttackTimer;           // 공격 타이머
+
+    [Header("----- 피격 -----")]
+    public float MaxHp;         // 최대 체력
+    public float CurrentHp;     // 현재 체력
+    public float KnockbackDuration;     // 넉백 지속 시간
+    public float KnockbackTimer;        // 넉백 타이머
+    public float DeadTimer;
+    public float DeadDuration;
+
+
+    private void Update()
+    {
+        switch (State)
+        {
+            case HeroState.Normal:
+                HandleMove();
+                HandleJump();
+                HandleAttack();
+                HandleDash();
+                break;
+            case HeroState.Knockback:
+                HandleKnockback();
+                break;
+            case HeroState.Dead:
+                HandleDead();
+                break;
+            case HeroState.Dash:
+                UpdateDash();
+                break;
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        CheckIsGround();
+    }
+
+    #region ----- 이동 -----
+    /// <summary>
+    /// 이동을 다루는 함수
+    /// </summary>
+    void HandleMove()
+    {
+        // 리지드바디2D 컴포넌트의 velocity 값을 조절해 좌우 이동
+        float h = Input.GetAxis("Horizontal");
+        Rigid.linearVelocityX = h * MoveSpeed;
+
+        // 좌우 이동에 따른 스프라이트 렌더러 Flip 설정
+        if (Rigid.linearVelocityX > 0)
+        {
+            Renderer.flipX = false;
+        }
+        else if (Rigid.linearVelocityX < 0)
+        {
+            Renderer.flipX = true;
+        }
+
+        // 좌우 이동에 따른 애니메이터(Animator) 패러미터 설정
+        float moveSpeed = Mathf.Abs(Rigid.linearVelocityX);
+        Anim.SetFloat("MoveSpeed", moveSpeed);
+    }
+    #endregion
+    #region ----- 점프 -----
+    /// <summary>
+    /// 점프를 다루는 함수
+    /// </summary>
+    void HandleJump()
+    {
+        if(Input.GetButtonDown("Jump") == true)
+        {
+            if(IsGround == true)
+            {
+                Jump();
+            }
+        }
+    }
+
+    void CheckIsGround()
+    {
+        IsGround = false;   
+        // 접촉 정보가 0개 초과이면
+        //contacts 배열에 각 적촉 정보를 넣어준다.
+        int count = Rigid.GetContacts(contacts);
+        if(count > 0)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                // 접촉 면의 노멀 벡터의 y 값이 0.7 보다 크면
+                // 경사로가 45도 이하인 면에 닿아있으면
+                if (contacts[i].normal.y > 0.7f)
+                {
+                    IsGround = true;
+                    break;
+                }
+            }
+        }
+        else
+            IsGround = false;
+        Anim.SetBool("IsGrouned", IsGround);
+        
+        
+    }
+    
+    /// <summary>
+    /// 점프하는 함수
+    /// </summary>
+    void Jump()
+    {
+        Rigid.AddForceY(JumpPower, ForceMode2D.Impulse);
+        Anim.SetTrigger("Onjump");
+
+    }
+    #endregion
+    #region ----- 공격 -----
+    /// <summary>
+    /// 공격 기능을 다루는 함수
+    /// </summary>
+    void HandleAttack()
+    {
+        // 공격 타이머 계산
+        if(AttackTimer <= AttackCooltime)
+        {
+            AttackTimer += Time.deltaTime;
+        }
+
+        if(Input.GetButtonDown("Fire1") == true)
+        {
+            if(AttackTimer > AttackCooltime)
+            {
+                AttackTimer = 0;
+                Attack();
+            }
+        }
+    }
+    /// <summary>
+    /// 공격하는 함수
+    /// </summary>
+    void Attack()
+    {
+        // 공격 애니메이션 재생
+        Anim.SetTrigger("OnAttack");
+
+        //공격 사운드 재생
+        Manager.PlaySfx(sfxType.Attack);
+
+    }
+
+    public void Hit()
+    {
+        // 공격 레이저 광선의 시작 지점
+        Vector2 origin = AttackPoint.transform.position;
+
+        // 공격 레이저 광선의 방향
+        Vector2 dir;
+        if (Renderer.flipX == false)
+        {
+            dir = Vector2.right;
+        }
+        else
+        {
+            dir = Vector2.left;
+        }
+
+        // 레이캐스트
+        RaycastHit2D hit = Physics2D.Raycast(
+            origin, dir, Range, TargetLayerMask);
+
+        // 레이에 콜라이더가 감지되었으면
+        // Hit 정보가 있으면
+        if (hit == true)
+        {
+            // Hit된 상대 게임오브젝트에서 Enemy 컴포넌트 가져오기
+            // hit.collider: 레이에 감지된 콜라이더 컴포넌트
+            Enemy enemy = hit.collider.GetComponent<Enemy>();
+
+            // Enemy 컴포넌트가 있는 경우
+            if (enemy != null)
+            {
+                //enemy.TakeHit(Damage);
+                enemy.TakeHit(Damage, hit.point, KnockbackForce);
+            }
+        }
+    }
+    #endregion
+
+    #region ----- 피격 -----
+    /// <summary>
+    /// 피격을 받는 함수
+    /// </summary>
+    /// <param name="damage">대미지</param>
+    public void TakeHit(float damage)
+    {
+        TakeDamage(damage);
+    }
+
+    /// <summary>
+    /// 피격을 받는 함수
+    /// </summary>
+    /// <param name="damage">대미지</param>
+    /// <param name="point">충돌 지점</param>
+    /// <param name="knockbackForce">넉백 힘</param>
+    public void TakeHit(float damage, Vector2 point, float knockbackForce)
+    {
+        TakeDamage(damage);
+        Knockback(point, knockbackForce);
+        Manager.PlaySfx(sfxType.Hit);
+    }
+
+
+    /// <summary>
+    /// 대미지를 입는 함수
+    /// </summary>
+    /// <param name="damage">대미지</param>
+    public void TakeDamage(float damage)
+    {
+        // 음수 대미지가 들어와서 현재 체력이 최대 체력보다 커지는 경우 제한
+        CurrentHp = Mathf.Min(CurrentHp - damage, MaxHp);
+        Anim.SetTrigger("Onhit");
+
+        // 현재 체력이 0 이하이면
+        if (CurrentHp <= 0)
+        {
+            // 사망 애니메이션 재생
+            Anim.SetTrigger("OnDead");
+
+            // 사망 상태로 변경
+            State = HeroState.Dead;
+
+            // 사망 타이머 충전
+            DeadTimer = DeadDuration;
+
+            // 콜라이더 off
+            Collider.enabled = false;
+
+            // 리지드바디 off
+            Rigid.simulated = false;
+        }
+
+        // 체력바 UI 갱신
+        Manager.UpdateHpBar(CurrentHp, MaxHp);
+    }
+
+    /// <summary>
+    /// 넉백을 당하는 함수
+    /// </summary>
+    /// <param name="point">충돌 지점</param>
+    /// <param name="knockbackForce">넉백 힘</param>
+    public void Knockback(Vector2 point, float knockbackForce)
+    {
+        // 넉백 상태로 변경
+        State = HeroState.Knockback;
+
+        // x 방향 이동 속력 초기화
+        Rigid.linearVelocityX = 0;
+
+        // 넉백 타이머 초기화
+        KnockbackTimer = KnockbackDuration;
+
+        // 넉백 방향
+        int dir = 1;
+        if(transform.position.x < point.x)
+        {
+            dir = -1;
+        }
+        else
+        {
+            dir = 1;
+        }
+
+        // 넉백 힘 적용
+        Rigid.AddForceX(dir * knockbackForce, ForceMode2D.Impulse);
+    }
+
+    /// <summary>
+    /// 넉백 상태를 다루는 함수
+    /// </summary>
+    void HandleKnockback()
+    {
+        KnockbackTimer -= Time.deltaTime;
+        if(KnockbackTimer < 0)
+        {
+            // 기본 상태로 변경
+            State = HeroState.Normal;
+        }
+    }
+    void HandleDead()
+    {
+        DeadTimer -= Time.deltaTime;
+        if (DeadTimer < 0)
+        {
+            // 자신 게임오브젝트 파괴
+            Destroy(gameObject);
+        }
+    }
+
+    #endregion
+
+    #region ----대쉬-----
+    void HandleDash()
+    {   
+        if (DashTimer <= DashcoolTime)
+        {
+
+             DashTimer += Time.deltaTime;
+            CanvasGroup.alpha = 1;
+            EnergyBar.fillAmount = DashTimer / DashcoolTime;
+             
+        }
+        else
+        {
+            CanvasGroup.alpha = 0;
+        }
+
+        if (Input.GetButtonDown("Dash") == true)
+        {
+            if (DashTimer >= DashcoolTime)
+            {
+                DashTimer = 0;
+                StartDash();
+            }
+        }
+        
+    }
+
+    void UpdateDash()
+    {
+        if(DashTimer > 0)
+        {
+
+            DashTimer -= Time.deltaTime;
+            CanvasGroup.alpha = 1;
+            if (DashTimer <= 0)
+            {
+                EndDash();
+            }
+            
+        }
+        
+    }
+
+
+
+    private void StartDash()
+    {
+        State = HeroState.Dash;
+
+        Anim.SetTrigger("OnDash");
+
+        CanvasGroup.alpha = 1;  //에너지바 ui 투명x
+
+        //대쉬 타이머 초기화
+        DashTimer = DashDuration;
+
+        //리지드바디 좌우 방향 속력을 대쉬 속력으로 설정
+        /*
+        int dir = 1;
+        if (Renderer.flipX == false)
+        {
+            dir = -1;
+        }
+        else
+        {
+            dir = 1;
+        }
+        */
+
+        int dir = Renderer.flipX ? -1 : 1;
+        Rigid.linearVelocityX = dir * DashSpeed;
+
+        //일시적으로 Layer를 Enemy로 바꿔서 무적상태로 만듬
+        gameObject.layer = LayerMask.NameToLayer("Enemy");
+
+    }
+    void EndDash()
+    {
+        State = HeroState.Normal;
+        Rigid.linearVelocityX = 0;
+        gameObject.layer = LayerMask.NameToLayer("Hero");
+
+    }
+
+    #endregion
+}
