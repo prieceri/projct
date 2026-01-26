@@ -1,0 +1,159 @@
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using static DictionaryStudy1;
+using UnityEngine.Rendering;
+
+/*
+딕셔너리(Dictionary)
+키-값(Key-Value) 쌍으로 데이터를 저장하는 자료구조
+-> 키(Key)로 저장된 값(Value)을 바로 찾을 수 있다.
+
+저장되는 Key들이 HashSet처럼 해시코드를 통해서 빠른 검색 가능
+
+C++의 unordered_map과 유사
+
+ex. 아이템 ID로 아이템 정보 데이터 찾기(ID로 설정 데이터 찾기)
+포켓몬 도감
+*/
+
+
+
+public class DictionaryStudy1 : MonoBehaviour
+{
+
+    // 학생 데이터 자료형 정의
+    // 이름, 점수, 반 데이터 저장 가능
+    public class Student
+    {
+        // 멤버 변수(필드, 이 자료형이 가질 수 있는 데이터들)
+        string _name;       // 학생 이름
+        int _score;         // 학생 점수
+        int _ban = 3;           // 학생 소속 반
+
+        // 읽기 전용 프로퍼티
+        public string Name => _name;
+        public int Score => _score;
+        public int Ban => _ban;
+
+        // 생성자
+        public Student(string name, int score)
+        {
+            _name = name;
+            _score = score;
+        }
+
+        /// <summary>
+        /// 학생의 점수를 설정하는 함수
+        /// </summary>
+        /// <param name="score">새 점수</param>
+        public void SetScore(int score)
+        {
+            _score = score;
+        }
+    }
+
+
+
+
+    [SerializeField] TMP_Text _outputText;  // 결과 출력
+    [SerializeField] TMP_InputField _keyIf; // 키 입력 상자
+    [SerializeField] TMP_InputField _valueIf;   // 값 입력 상자
+
+    // 딕셔너리는 인스펙터뷰를 지원하지 않는다.
+
+    // 학생 이름(키) - 학생 데이터(값) 딕셔너리
+    [SerializeField] Dictionary<string, Student> _studentMap = new();
+
+    /// <summary>
+    /// 학생을 추가하거나 갱신하는 함수
+    /// </summary>
+    public void AddOrUpdateStudent()
+    {
+        // 키 입력 상자에서 학생 이름 가져오기
+        string name = _keyIf.text;
+
+        // 점수 입력 상자에서 점수 가져오기
+        if(int.TryParse(_valueIf.text, out int score) == false)
+        {
+            Debug.Log("점수는 정수 숫자로 입력해 주세요.");
+            return;
+        }
+
+        // 딕셔너리에 학생 이름이 없었으면
+        if(_studentMap.ContainsKey(name) == false)
+        {
+            // 1) 새 학생 데이터 객체 생성
+            Student stu = new Student(name, score);
+
+            // 2) 새 학생 정보 등록
+            _studentMap.Add(name, stu);
+
+            _studentMap[name] = stu;
+        }
+        // 딕셔너리에 학생 이름이 있었으면
+        else
+        {           
+            // 1) 학생 데이터 가져오기
+            Student sut = _studentMap[name];
+            // 2) 학생 데이터에서 점수만 수정
+            sut.SetScore(score);
+        }
+        UpdateOutput();
+    }
+
+    public void UpdateOutput()
+    {
+        _outputText.text = "학생 목록:\n";
+
+        foreach(KeyValuePair<string, Student> pair in _studentMap)
+        {
+            // 학생 가져오기
+            Student stu = pair.Value;
+
+            _outputText.text += $"- {pair.Key}({stu.Ban}반): {stu.Score}점\n";
+        }
+    }
+
+    /// <summary>
+    /// 학생 점수를 검색하여 콘솔창에 출력해 주는 함수
+    /// </summary>
+    public void searchscore()
+    {
+        // 유저가 입력한 이름 문자열 가져오기
+        string name = _keyIf.text;
+
+        // 학생 이름이 있는지 여부 확인
+        if (_studentMap.ContainsKey(name) == true)
+        {
+            // 해당 학생의 점수 가져오기
+            Student score = _studentMap[name];
+
+            Debug.Log($"{name} 학생의 점수는 {score}점입니다.");
+        }
+        else
+        {
+            Debug.Log($"{name} 학생은 존재하지 않습니다.");
+        }
+    }
+
+    /// <summary>
+    /// 학생 점수 기록을 제거하는 함수
+    /// </summary>
+    public void removescore()
+    {
+        string name = _keyIf.text;
+
+        // name 키가 존재하여 제거하는 데 성공한 경우
+        if (_studentMap.Remove(name) == true)
+        {
+            Debug.Log($"{name} 학생이 제거되었습니다.");
+        }
+        else
+        {
+            Debug.Log($"{name} 학생은 존재하지 않습니다.");
+        }
+
+        UpdateOutput();
+    }
+}
