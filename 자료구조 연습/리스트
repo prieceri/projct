@@ -1,0 +1,129 @@
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+
+// 자료구조(DataStructure)
+// - 여러 자료를 효율적으로 저장하는 방식
+
+// 배열(Array)
+// -> 능력치, 설정 데이터와 같이 요소들 수가 게임 내내 바뀌지 않는 경우
+
+// 리스트(List)
+// -> 오브젝트 목록 등 요소들 수가 계속 바뀔 수 있는 경우
+
+// C# 리스트(List)
+// 크기(요소 수)를 변경할 수 있는 배열처럼 사용되는 자료구조
+
+// 배열과 리스트는 public 변수이거나, [SerializeField]이면
+// 유니티 인스펙터뷰에서 편집 가능
+
+// 다른 자료구조는 인스펙터뷰 지원 X
+
+public class ListStudy : MonoBehaviour
+{
+    [SerializeField] TMP_Text _elemPrefab;      // 프리팹
+    [SerializeField] List<TMP_Text> _elems = new List<TMP_Text>();  // 리스트
+
+    /// <summary>
+    /// 요소를 추가하는 함수
+    /// </summary>
+    public void AddElement()
+    {
+        // 1) _elemPrefab을 복제하여 자신의 자식 게임오브젝트로 생성
+        TMP_Text elem = Instantiate(_elemPrefab, transform);
+
+        // 2) 복제본 elem의 text 값을 리스트에 저장된 요소 수로 설정
+        elem.text = _elems.Count.ToString();
+
+        // 3) 복제본 elem을 리스트에 저장
+        _elems.Add(elem);
+    }
+
+    /// <summary>
+    /// 마지막 요소를 제거하는 함수
+    /// </summary>
+    public void RemoveLastElement()
+    {
+        // 1) 리스트에서 마지막 요소 가져오기
+        TMP_Text elem = _elems[_elems.Count - 1];
+
+        // 2) 해당 요소 게임오브젝트를 파괴
+        Destroy(elem.gameObject);
+
+        // 3) 해당 요소를 리스트에서 제거
+        _elems.RemoveAt(_elems.Count - 1);
+    }
+
+    /// <summary>
+    /// 모든 요소의 색상을 빨간색으로 설정하는 함수
+    /// </summary>
+    public void SetAllColorRed()
+    {
+        // 1) for문으로 모든 요소 순회
+        //for(int i = 0; i < _elems.Count; i++)
+        //{
+        //    _elems[i].color = Color.red;
+        //}
+
+        // 2) foreach문으로 모든 요소 순회
+        foreach(TMP_Text elem in _elems)
+        {
+            elem.color = Color.red;
+        }
+    }
+    public void SetAllColorWhite()
+    {
+        foreach(var elem in _elems)
+        {
+            elem.color = Color.white;
+        }
+    }
+
+    public void RemoveAll()
+    {
+        //for(int i = 0; i < _elems.Count; i++)
+        //{
+        //    Destroy(_elems[i].gameObject);
+        //}
+
+        // _elems 리스트에 저장되어 있는 모든 요소의 게임오브젝트 파괴
+        foreach(var elem in _elems)
+        {
+            Destroy(elem.gameObject);
+        }
+
+        // 리스트 비우기
+        _elems.Clear();
+    }
+
+
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Alpha1) == true)
+        {
+            AddElement();
+        }
+
+        if(Input.GetKeyDown(KeyCode.Alpha2) == true)
+        {
+            RemoveLastElement();
+        }
+
+        if(Input.GetKeyDown(KeyCode.Alpha3) == true)
+        {
+            SetAllColorRed();
+        }
+
+        if(Input.GetKeyDown(KeyCode.Alpha4) == true)
+        {
+            SetAllColorWhite();
+        }
+
+        if(Input.GetKeyDown(KeyCode.Alpha0) == true)
+        {
+            RemoveAll();
+        }
+    }
+
+}
