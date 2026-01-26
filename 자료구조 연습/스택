@@ -1,0 +1,79 @@
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+
+/*
+스택(Stack)
+- 후입선출(LIFO: Last In, First Out)
+- 나중에 들어온 자료가 먼저 나오는 자료구조
+ 
+ex. 명령 되돌리기(Ctrl + z), 팝업창 쌓기, 오브젝트 풀
+*/
+
+public class StackStudy : MonoBehaviour
+{
+    [SerializeField] TMP_Text _elemPrefab;
+    [SerializeField] Stack<TMP_Text> _stack = new Stack<TMP_Text>();
+    [SerializeField] int _counter = 0;
+
+    /// <summary>
+    /// 스택에 요소 하나를 추가하는 함수
+    /// </summary>
+    public void Push()
+    {
+        TMP_Text elem = Instantiate(_elemPrefab, transform);
+        elem.text = _counter.ToString();
+        _stack.Push(elem);
+        _counter++;
+    }
+
+    /// <summary>
+    /// 스택에서 요소 하나를 꺼내오는 함수
+    /// </summary>
+    public void Pop()
+    {
+        if (_stack.Count == 0) return;
+
+        // 스택에 저장된 가장 최근 요소 꺼내기
+        TMP_Text elem = _stack.Pop();
+
+        elem.color = Color.red;
+    }
+
+    public void Peek()
+    {
+        if (_stack.Count == 0) return;
+
+        TMP_Text elem = _stack.Peek();
+        elem.color = Color.yellow;
+    }
+
+    public void SetAllColorGreen()
+    {
+        foreach(var elem in _stack)
+        {
+            elem.color = Color.green;
+        }
+    }
+
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Alpha1) == true)
+        {
+            Push();
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2) == true)
+        {
+            Pop();
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha3) == true)
+        {
+            Peek();
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha4) == true)
+        {
+            SetAllColorGreen();
+        }
+    }
+}
