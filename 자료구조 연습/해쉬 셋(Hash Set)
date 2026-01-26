@@ -1,0 +1,86 @@
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+
+/*
+해쉬셋(HashSet)
+- 중복 비허용 집합
+- List와 달리 같은 데이터를 하나만 저장할 수 있다.
+(값 타입: 구조체, 참조 타입: 클래스)
+- Contains()로 빠르게 데이터의 존재 여부를 확인할 수 있다.
+(리스트, 배열 등은 데이터 존재 여부를 모든 요소를 순회하는 방식으로 확인하기 때문에
+해쉬셋에 비해 상대적으로 느리다.)
+
+C++에서는 unordered_set과 유사
+
+해쉬코드
+- 어떤 데이터를 숫자로 바꾼 것
+- 해쉬셋은 해쉬코드를 사용하기 때문에 검색이 빠르다.
+ 
+ex. 어떤 집합에 데이터의 존재 여부를 빠르게 확인해야 하는 경우
+*/
+
+public class HashSetStudy : MonoBehaviour
+{
+    [SerializeField] TMP_Text _outputText;          // 출력용
+    [SerializeField] TMP_InputField _inputField;    // 유저 입력
+
+    // 해시셋은 인스펙터뷰를 지원하지 않는다.
+    [SerializeField] HashSet<string> _fruitSet = new HashSet<string>();
+
+    private void Start()
+    {
+        _outputText.text = "과일 목록: ";
+    }
+
+    /// <summary>
+    /// 해쉬셋에 유저가 적은 과일 이름을 추가하는 함수
+    /// </summary>
+    /// <param name="fruit"></param>
+    public void AddFruit(string fruit)
+    {
+        if(_fruitSet.Add(fruit) == true)
+        {
+            Debug.Log($"{fruit} 추가됨");
+        }
+        else
+        {
+            Debug.Log($"{fruit} 이미 존재함");
+        }
+        UpdateOuput();
+    }
+
+    public void CheckContains(string fruit)
+    {
+        // 해쉬셋에 데이터가 포함되어 있는지 여부 확인
+        bool has = _fruitSet.Contains(fruit);
+    }
+
+    public void RemoveFruit()
+    {
+        // 입력 상자(InputField)에서 유저가 입력한 문자열 가져오기
+        string fruit = _inputField.text;
+
+        if(_fruitSet.Remove(fruit) == true)
+        {
+            Debug.Log($"{fruit} 제거됨");
+        }
+        else
+        {
+            Debug.Log($"{fruit} 존재하지 않음");
+        }
+
+        UpdateOuput();
+    }
+
+
+
+    public void UpdateOuput()
+    {
+        _outputText.text = "과일 목록:\n";
+        foreach(var fruit in _fruitSet)
+        {
+            _outputText.text += $"- {fruit}\n";
+        }
+    }
+}
