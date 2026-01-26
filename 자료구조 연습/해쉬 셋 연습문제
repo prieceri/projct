@@ -1,0 +1,104 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+/*
+연습문제.
+1. 보스 방에 입장하려면 세 종류의 열쇠가 필요합니다.
+세 종류의 열쇠를 enum으로 만들어 주세요.(enum이 어려우면 그냥 string으로 해도 된다.)
+(ex. 붉은 열쇠, 푸른 열쇠, 검은 열쇠)
+2. 유저가 엔터 키(KeyCode.Return)를 누를 때마다 세 종류의 열쇠 중 랜덤한 한 가지를 획득합니다.
+3. 새로운 열쇠를 획득했으면 "OO열쇠를 구했습니다!"가 출력되게 해 주세요.
+4. 이미 획득한 열쇠를 다시 획득했으면 "OO열쇠는 이미 가지고 있습니다."가 출력되게 해 주세요.
+5. 각 열쇠의 개수와 무관하게 모든 열쇠를 획득하면,
+"보스 방에 입장합니다!!"가 출력되게 해 주세요.
+ */
+
+
+
+public class HashSetPractice : MonoBehaviour
+{
+    public enum KeyType
+    {
+        Red,
+        Blue,
+        Black,
+        Gold,
+        Silver,
+        Count       // Enum 자료형의 개수를 쉽게 가져오는 A 방식
+    }
+
+    // KeyType enum 자료들을 저장할 해쉬셋
+    HashSet<KeyType> _collectedKeys = new HashSet<KeyType>();
+
+    // 인스펙터뷰에서 설정할 것이기 때문에 new 키워드 미사용
+    [SerializeField] string[] _keyNames;
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Return) == true)
+        {
+            // 1) 랜덤으로 열쇠 하나 선택
+            KeyType randomKey = (KeyType)Random.Range(0, (int)KeyType.Count);
+
+            //KeyType randomKey = (KeyType)Random.Range(0, 
+            //    System.Enum.GetValues(typeof(KeyType)).Length);
+            // -> Enum 자료형의 개수를 가져오는 정석이지만 어려운 방식 B
+
+            // 2) 새로운 열쇠를 획득했는지 확인
+            if (_collectedKeys.Add(randomKey) == true)
+            {
+                Debug.Log($"{GetKeyName(randomKey)} 열쇠를 구했습니다.");
+            }
+            else
+            {
+                Debug.Log($"{GetKeyName(randomKey)} 열쇠는 이미 가지고 있습니다.");
+            }
+
+            // 3) 모든 열쇠를 획득했는지 확인
+            if(_collectedKeys.Count == (int)KeyType.Count)
+            {
+                Debug.Log("보스 방에 입장합니다!!");
+            }
+        }
+    }
+
+    /// <summary>
+    /// KeyType enum 자료형을 사람이 읽기 좋은 문자열로 변환해 주는 함수
+    /// </summary>
+    /// <param name="keyType"></param>
+    /// <returns></returns>
+    public string GetKeyName(KeyType keyType)
+    {
+        // A안. 쉽지만 귀찮은 방식
+        //switch (keyType)
+        //{
+        //    case KeyType.Red:
+        //        return "빨강";
+        //    case KeyType.Blue:
+        //        return "파랑";
+        //    case KeyType.Black:
+        //        return "검정";
+        //    case KeyType.Gold:
+        //        return "금색";
+        //    case KeyType.Silver:
+        //        return "은색";
+        //    default:
+        //        return "버그";
+        //}
+
+        // B안.
+        // 1) KeyType enum 자료를 int로 변환
+        int keyTypeIndex = (int)keyType;
+
+        // 2) 순번 값이 배열 범위 안이 맞는지 확인
+        if(keyTypeIndex < 0 || keyTypeIndex >= _keyNames.Length)
+        {
+            return "버그";
+        }
+        else
+        {
+            return _keyNames[keyTypeIndex];
+        }
+    }
+
+}
