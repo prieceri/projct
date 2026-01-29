@@ -1,0 +1,167 @@
+--------Hero Modle----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+public void AddStat(HeroStatType statType, float amount)
+{
+    switch(statType)
+    {
+        case HeroStatType.Damage:
+            _damage += amount;
+            break;
+        case HeroStatType.CriticalRate:
+            _criticalRate += amount;
+            break;
+        case HeroStatType.CriticalFactor:
+            _criticalFactor += amount;
+            break;
+        default:
+            Debug.LogWarning($"{statType}은 없습니다");
+                break;
+
+    }
+}
+
+
+/// <summary>
+/// 특정 능력치를 반환하는 함수
+/// </summary>
+/// <param name="statType">능력치 종류</param>
+/// <returns>능력치 값</returns>
+public float GetStat(HeroStatType statType)
+{
+    switch (statType)
+    {
+        case HeroStatType.Damage:
+            return _damage;
+        case HeroStatType.CriticalRate:
+            return _criticalRate;
+        case HeroStatType.CriticalFactor:
+            return _criticalFactor;
+        default:
+            Debug.LogWarning($"{statType}은 없습니다");
+            return 0;
+    }
+}
+
+--------Upgrader----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+public enum HeroStatType
+{
+    Damage,
+    CriticalRate,
+    CriticalFactor,
+    count,
+}
+public void Initialize(HeroModel model, Session session)
+{
+    //UI 갱신
+    UpdateView(HeroStatType.Damage);
+    UpdateView(HeroStatType.CriticalRate);
+    UpdateView(HeroStatType.CriticalFactor);
+}  
+public void Upgrade(int statIndex)
+    {
+        Upgrade((HeroStatType)statIndex);
+    }
+    public void Upgrade(HeroStatType statType)
+    {
+            //Ui갱신
+            UpdateView(statType);
+    }
+
+    /// <summary>
+    /// 업그레이드 뷰를 갱신하는 함수
+    /// </summary>
+    /// <param name="statType">능력치 종류</param>
+    public void UpdateView(HeroStatType statType)
+    {
+        // 능력치 번호 가져오기
+        int statIndex = (int)statType;
+
+        // 능력치 번호 검증
+        if(statIndex < 0 || statIndex >= _levels.Length)
+        {
+            Debug.LogError($"{statIndex} 번호 능력치는 존재하지 않습니다.");
+            return;
+        }
+        // 능력치 업그레이드 데이터 가져오기
+        UpgradeData data = _datas[statIndex];
+       
+        // 업그레이드 뷰 가져오기
+        UpgradeView view = _views[statIndex]; 
+       
+        // 레벨 갱신
+        int level = _levels[statIndex];
+       
+        // 능력치 합
+        float sum = _model.GetStat(statType);
+       
+        // 비용
+        float cost = data.GetCost(level);
+        
+        // 능력치 증가량
+        float nextValue = data.GetValue(level + 1);
+
+        // Ui 갱신
+        view.UpdateView(level, sum, cost, nextValue);   
+    }
+
+}
+
+--------UpgradeView----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/// <summary>
+/// 업그레이드 정보  ui 표시 담당
+/// </summary>
+public class UpgradeView : MonoBehaviour
+{
+    [Header("------컴포넌트-------")]
+    [SerializeField] TMP_Text _levelText;   //현재 레벨 텍스트
+    [SerializeField] TMP_Text _sumText;     //(누적) 능력치 합계
+    [SerializeField] TMP_Text _costText;    //필요한 비용
+    [SerializeField] TMP_Text _valueText;   //얼마씩 증가하는지 
+
+
+    public void UpdateLevel(int level)
+    {
+        _levelText.text = $"Lv. {level}";
+       
+    }
+    public void UpdateSum(float sum)
+    {
+        // 1.문자열 연결 연산자
+        //_sumText.text = "데미지: " + sum;
+        // 2. 문자열 보간
+        //_sumText.text = $"대미지: {sum}";
+        // 3. string.Format() 방식
+        _sumText.text = string.Format("대미지 : {0}", sum);
+    
+    }
+    
+    public void UpdateCost(float cost)
+    {
+        _costText.text = cost.ToString("F0");
+    }
+
+    public void UpdateValue(float value)
+    {
+        _valueText.text = string.Format("+ {0} DPS", value);
+
+    }
+
+
+    /// <summary>
+    /// 업그레이드 뷰를 갱신하는 함수
+    /// </summary>
+    /// <param name="level">레벨</param>
+    /// <param name="sum">능력치 합</param>
+    /// <param name="cost">비용</param>
+    /// <param name="value">이번 레벨업 시 능력치 증가량</param>
+    public void UpdateView(int level, float sum, float cost, float value)
+    {
+        UpdateLevel(level);
+        UpdateSum(sum);
+        UpdateCost(cost);
+        UpdateValue(value);
+    }
+
+
+}
