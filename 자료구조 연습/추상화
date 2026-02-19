@@ -1,0 +1,77 @@
+sing NUnit.Framework;
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary>
+/// 추상화
+/// - 객체의 복잡한 내부 구현은 숨기고, 외부에는 필요한 기능만 제공하는 설계방식
+/// abstract, override, interface
+/// 
+/// 1) 추상 클래스
+/// 2) 인터페이스
+/// </summary>
+public class Abstraction : MonoBehaviour
+{
+    // 추상 클래스
+    //1) 이 클래스의 객체를 직접 만들수가 읎다.
+    //2) 자식 클래스가 추상 멤버를 반드시 구현하도록 강제함
+    public abstract class Enemy
+    {
+        public string Name;
+
+        public Enemy(string name)
+        {
+            Name = name;
+        }
+
+        public void move()
+        {
+            Debug.Log($"{Name}이 움직이기 시작합니다.");
+        }
+
+        // 반드시 자식 클래스가 구현해야 하는 함수
+        public abstract void Attack();
+
+    }
+
+    public class Slime : Enemy
+    {
+        public Slime() : base("슬라임")
+        {
+        }
+
+
+        public override void Attack()
+        {
+           Debug.Log($"{Name}이 뛰어 올라 공격합니다.");
+        }
+    }
+
+    public class Orc : Enemy
+    {
+        public Orc() : base("오크")
+        {
+        }
+
+
+        public override void Attack()
+        {
+            Debug.Log($"{Name}이 달려들어 공격합니다.");
+        }
+    }
+
+    private void Start()
+    {
+        List<Enemy> list = new List<Enemy>
+        {
+            new Slime(),
+            new Orc()
+        };
+
+        foreach (Enemy enemy in list)
+        {
+            enemy.Attack();
+            enemy.move();
+        }
+    }
+}
