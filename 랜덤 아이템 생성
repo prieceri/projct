@@ -21,3 +21,4 @@ public float FishRate;
         // 복제본 물고기의 위치를 구름 약간(FishOffsetY) 위로 설정
         fish.transform.Translate(0, FishOffsetY, 0);
     }
+ㄴ
