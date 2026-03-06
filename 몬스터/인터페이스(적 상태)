@@ -1,0 +1,214 @@
+using UnityEngine;
+
+// 유한 상태머신
+
+// 상태 패턴(State Pattern)
+// 한 대상의 상태를 개별 클래스로 설계하는 방식
+
+// -> 이 프로젝트에서는 Normal, Stagger, Dead 각각의 상태를 하나의 클래스로 설계
+
+/// <summary>
+/// 적 상태 종류
+/// </summary>
+public enum EnemyStateType
+{
+    Normal,     // 일반
+    Stagger,    // 경직(비틀거림, 피격)
+    Dead,       // 사망
+
+    Count,      //마지막 (꼼수)
+}
+
+/// <summary>
+/// 적 상태 인터페이스
+/// </summary>
+public interface IEnemyState
+{
+    /// <summary>
+    /// 상태 종류
+    /// </summary>
+    EnemyStateType StateType { get; }
+
+    /// <summary>
+    /// 상태 시작
+    /// </summary>
+    void Enter();
+
+    /// <summary>
+    /// 상태 유지
+    /// </summary>
+    void Update();
+
+    /// <summary>
+    /// 상태 종료
+    /// </summary>
+    void Exit();
+}
+
+
+/// <summary>
+/// 일반 상태(인터페이스) - 타겟을 추격
+/// </summary>
+public class NormalState : IEnemyState
+{
+    public EnemyStateType StateType => EnemyStateType.Normal;
+
+    Enemy _enemy;       // 상태 객체가 명령을 내릴 대상을 하나 갖고 있어야함
+
+    public NormalState(Enemy enemy)
+    {
+        _enemy = enemy;
+    }
+
+    public void Enter()
+    {
+       // Noraml 상태가 시작할떄 실행될 동작
+       
+    }
+
+    public void Exit()
+    {
+        _enemy.Stop();
+    }
+
+    public void Update()
+    {
+        // Normal 상태가 유지될때 실행할 동작
+        // 타겟 추적
+
+        _enemy.Follow();
+    }
+}
+
+
+/// <summary>
+/// 경직(비틀거림) 상태 - 일정시간후 normal로 변경
+/// </summary>
+public class StaggerState : IEnemyState
+{
+    public EnemyStateType StateType => EnemyStateType.Stagger;
+    Enemy _enemy;
+    float _duration;        //경직 상태 지속 시간
+    float _time;            //타이머
+
+    public StaggerState(Enemy enemy, float duration)
+    {
+        _enemy = enemy;
+        _duration = duration;
+        
+    }
+
+    public void Enter()
+    {
+        _enemy.Stop();  // 정지
+        _time = 0;      // 타이머 초기화
+        
+    }
+
+    public void Exit()
+    {
+
+    }
+
+
+    public void Update()
+    {
+        _time += Time.deltaTime;    //타이머 충전
+        if(_time > _duration)       // _duration만큼 시간 경과
+        {
+            // 상태 변경 요청(Normal)
+            //ToDo
+        }
+    }
+}
+
+public class DeadState : IEnemyState
+{
+    public EnemyStateType StateType => EnemyStateType.Dead;
+    Enemy _enemy;
+    float _duration;
+    float _timer;
+    
+    public DeadState(Enemy enemy, float duration)
+    {
+        _enemy = enemy;
+        _duration = duration;
+       
+    }
+
+    public void Enter()
+    {
+        _timer = 0;
+        _enemy.Stop();
+    }
+
+    public void Exit()
+    {
+        
+    }
+
+    public void Update()
+    {
+        _timer += Time.deltaTime;
+        if(_timer > _duration) 
+        {
+            _enemy.Remove();
+        }
+    }
+}
+
+
+=======================================================================================================
+Enemy
+
+   IEnemyState _state;     //현재 상태 객체를 가리키는 인터페이스 변수
+ IEnemyState[] _states = new IEnemyState[(int)EnemyStateType.Count]; //상태 리스트
+
+  public void Initialize(Hero hero, EnemySpawner spawner)
+  {
+        _states = new IEnemyState[]
+    {
+        new NormalState(this),
+        new StaggerState(this, 0.3f),
+        new DeadState(this, 1.0f),
+    };
+
+    _state = _states[(int)EnemyStateType.Normal];
+}
+
+/// <summary>
+/// 상태 변환 함수
+/// 기존 상태와 새 상태가 동일한 경우에는 실행하지 않는다.
+/// ex)기존 상태가 사망 상태일 경우에는 실행하지 않는다.
+/// </summary>
+/// <param name="stateType">스텟 타입</param>
+public void ChangeState(EnemyStateType stateType)
+{
+    if(_state != null)
+    {
+        // 기존 상태가 사망 상태인 경우
+        if(_state.StateType == EnemyStateType.Dead) return;
+        
+        // 기존 상태와 새상태가 같은경우
+        if (_state.StateType == stateType) return;
+
+        //기존 상태 종료
+        _state.Exit();
+
+    }
+
+    // 현재 상태를 새 상태로 변경
+    _state = _states[(int)stateType];
+
+    // 현재 상태 시작 실행
+    _state.Enter();
+}
+
+private void Update()
+{
+    if(_state ==  null) return;
+
+    // 현재 상티의 업데이트 함수 호출
+    _state.Update();
+    
+}
