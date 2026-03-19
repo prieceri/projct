@@ -1,0 +1,84 @@
+    #region ----- 대쉬 ------
+    /// <summary>
+    /// 대쉬를 처리하는 함수
+    /// </summary>
+    void HandleDash()
+    {
+        if (_dashCooldown < _dashcoolTime)
+        { 
+            if (_dashCooldown > _dashcoolTime)
+                _dashCooldown = _dashcoolTime;
+            _dashCooldown += Time.deltaTime;
+
+
+            _canvasGroup.alpha = 1;
+            _enrgebar.UpdateBar(_dashCooldown, _dashcoolTime);
+
+        }
+        else
+            _canvasGroup.alpha = 0;
+
+        if(Input.GetButtonDown("Fire2") == true)
+        {
+            if (_dashCooldown >= _dashcoolTime)
+            {
+                _dashCooldown = 0;
+                StartDash();
+            }
+        }
+    }
+   
+    void UpdateDash()
+    {
+        if (_dashDurationTimer > 0)
+        {
+            _dashDurationTimer -= Time.deltaTime;
+            if (_dashDurationTimer <= 0)
+            {
+                EndDash();
+                _canvasGroup.alpha = 1;
+            }
+              
+        }
+    }
+
+
+    private void StartDash()
+    {
+        _heroState = HeroState.Dash;
+
+        _anim.SetTrigger("Dash");
+
+        //대쉬 타이머 초기화
+        _dashDurationTimer = _dashDuration;
+
+        //리지드바디 좌우 방향 속력을 대쉬 속력으로 설정
+        /*
+        int dir = 1;
+        if (Renderer.flipX == false)
+        {
+            dir = -1;
+        }
+        else
+        {
+            dir = 1;
+        }
+        */
+
+        int dir = _rander.flipX ? 1 : -1;
+        _rigid.linearVelocityX = dir * _dashSpeed;
+
+        //일시적으로 Layer를 Enemy로 바꿔서 무적상태로 만듬
+        gameObject.layer = LayerMask.NameToLayer("Enemy");
+
+    }
+    void EndDash()
+    {
+        _heroState = HeroState.Normal;
+        _rigid.linearVelocityX = 0;
+        gameObject.layer = LayerMask.NameToLayer("Hero");
+
+    }
+    #endregion
+
+}
