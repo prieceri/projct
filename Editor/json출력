@@ -1,0 +1,39 @@
+using System.IO;
+using System.Text;
+using UnityEditor;
+using UnityEngine;
+using Newtonsoft.Json;  //window-packge Manager에서 +버튼에 git ULR에 추가해서 하는것 (com.unity.nuget.newtonsoft-jso)
+
+public class Unit_TestFile 
+{
+
+    public static void SaveJson(string path, PlayerData playerData)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine("{");
+        stringBuilder.AppendLine($"\t\"Name\": \"{playerData.Name},");
+        stringBuilder.AppendLine($"\t\"Hp\": \"{playerData.Hp},");
+        stringBuilder.AppendLine($"\t\"Attack\": \"{playerData.Attack},");
+        stringBuilder.AppendLine($"\t\"Defence\": \"{playerData.Defence},");
+        stringBuilder.AppendLine("}");
+
+        File.WriteAllText(path, stringBuilder.ToString());  //이건 내용들을 텍스트 파일로 만들어줌
+
+        Debug.Log($"{path}에 json 파일 저장");
+        AssetDatabase.Refresh();  // 이건 그냥 계속 붙여서 쓰는거 오류 줄여줌
+    }
+
+    public static void SaveJson2(string path, PlayerData playerData)
+    {
+        string str = JsonConvert.SerializeObject(playerData, Formatting.Indented);
+        
+        File.WriteAllText(path, str);
+
+        Debug.Log($"{path}에 json 파일 저장");
+        AssetDatabase.Refresh();
+
+
+
+    }
+ }
+
