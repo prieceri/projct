@@ -1,0 +1,74 @@
+using System;
+using Unity.VisualScripting;
+using UnityEditor;
+using UnityEngine;
+
+[Serializable]
+public struct PlayerData
+{
+    public string Name;
+    public float Hp;
+    public float Attack;
+    public float Defence;
+    public void SetData(string Name, float Hp, float Attack, float Defence)
+    {
+        this.Name = Name;
+        this.Hp = Hp;
+        this.Attack = Attack;
+        this.Defence = Defence;
+
+    }
+
+}
+
+public class Unit_Serialization : MonoBehaviour
+{
+    [SerializeField] private PlayerData playerData;
+
+    public PlayerData PlayerData => playerData;
+
+    [SerializeField] private string fileName;
+
+}
+
+
+
+[CustomEditor(typeof(Unit_Serialization))] 
+public class Unit_Serialization_Editor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        //DrawDefaultInspector();
+
+        //Debug.Log("OnInspectorGUI");
+
+        serializedObject.Update();
+
+        SerializedProperty playerDataProp = serializedObject.FindProperty("playerData");
+
+        SerializedProperty nameProp = playerDataProp.FindPropertyRelative("Name");
+        EditorGUILayout.PropertyField(nameProp, new GUIContent("Name"));
+
+        SerializedProperty HpProp = playerDataProp.FindPropertyRelative("Hp");
+        EditorGUILayout.PropertyField(HpProp, new GUIContent("Hp"));
+
+        SerializedProperty AttackProp = playerDataProp.FindPropertyRelative("Attack");
+        EditorGUILayout.PropertyField(AttackProp, new GUIContent("Attack"));
+
+        SerializedProperty DefenceProp = playerDataProp.FindPropertyRelative("Defence");
+        EditorGUILayout.PropertyField(DefenceProp, new GUIContent("Defence"));
+
+        serializedObject.ApplyModifiedProperties(); //ApplyModifiedProperties : 내부 캐쉬에 변경점을 적용
+
+        Unit_Serialization serial = (Unit_Serialization)target;
+        string path = "Assets/UnitTests/02_Serialization";
+
+        if (GUILayout.Button("1_json"))
+            //Debug.Log($"Name : {nameProp.stringValue}, Hp: {HpProp.floatValue}, Power: {AttackProp.floatValue}, Defencd: {DefenceProp.floatValue}");
+            Unit_TestFile.SaveJson(path + "/1_Json.txt", serial.PlayerData);
+        if (GUILayout.Button("2_json"))
+            Unit_TestFile.SaveJson2(path + "/2_Json.txt", serial.PlayerData);
+    }
+
+
+}
