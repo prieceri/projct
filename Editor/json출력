@@ -2,7 +2,10 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using Newtonsoft.Json;  //window-packge Manager에서 +버튼에 git ULR에 추가해서 하는것 (com.unity.nuget.newtonsoft-jso)
+using Newtonsoft.Json;
+using System.Runtime.InteropServices;
+using System;
+using System.Linq;
 
 public class Unit_TestFile 
 {
@@ -17,10 +20,10 @@ public class Unit_TestFile
         stringBuilder.AppendLine($"\t\"Defence\": \"{playerData.Defence},");
         stringBuilder.AppendLine("}");
 
-        File.WriteAllText(path, stringBuilder.ToString());  //이건 내용들을 텍스트 파일로 만들어줌
+        File.WriteAllText(path, stringBuilder.ToString());
 
         Debug.Log($"{path}에 json 파일 저장");
-        AssetDatabase.Refresh();  // 이건 그냥 계속 붙여서 쓰는거 오류 줄여줌
+        AssetDatabase.Refresh();
     }
 
     public static void SaveJson2(string path, PlayerData playerData)
@@ -32,8 +35,128 @@ public class Unit_TestFile
         Debug.Log($"{path}에 json 파일 저장");
         AssetDatabase.Refresh();
 
+    }
 
+    public static void OpenJson(string path)
+    {
+        if (!File.Exists(path))
+        {
+            Debug.LogError($"파일이 존재하지 않습니다 : {path}");
+            return;
+        }
+
+        string str = File.ReadAllText(path);
+        PlayerData data = JsonConvert.DeserializeObject<PlayerData>(str);
+
+        str += "\n\n";
+        str += "Name :" + data.Name + "\n";
+        str += "Hp :" + data.Hp + "\n";
+        str += "Attack :" + data.Attack + "\n";
+        str += "Defence :" + data.Defence;
+
+
+        EditorUtility.DisplayDialog("Json", str, "확인");
+        AssetDatabase.Refresh();
+    }
+
+    /// <summary>
+    /// 파일 암호화
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="data"></param>
+    public static void SaveBinaryFile(string path, PlayerData data)
+    {
+        using (FileStream fileStream = new FileStream(path, FileMode.Create)) 
+        {
+            using (BinaryWriter writer = new BinaryWriter(fileStream))
+            {
+                writer.Write(data.Name);
+                writer.Write(data.Hp);
+                writer.Write(data.Attack);
+                writer.Write(data.Defence);
+            }
+            //writer.Close();
+        }
+
+        Debug.Log($"{path}에 data 파일 저장");
+        AssetDatabase.Refresh();
+        //fileStream.Close();
+    }
+
+    public static void OpenBinaryFile(string path)
+    {
+        string str = "";
+
+        using (FileStream fileStream = new FileStream(path, FileMode.Open))
+        {
+            using (BinaryReader reader = new BinaryReader(fileStream))
+            {
+                str += "\n\n";
+                str += "Name :" + reader.ReadString() + "\n";
+                str += "Hp :" + reader.ReadSingle() + "\n";
+                str += "Attack :" + reader.ReadSingle() + "\n";
+                str += "Defence :" + reader.ReadSingle() + "\n";
+
+            }
+            //writer.Close();
+        }
+        EditorUtility.DisplayDialog("Binary", str, "확인");
+    }
+
+    public static void SaveMashal(string path, WeaponData[] datas)
+    {
+        using (FileStream fileStream = new FileStream(path, FileMode.Create))
+        {
+            using (BinaryWriter writer = new BinaryWriter(fileStream))
+            {
+                writer.Write(datas.Length);
+
+                ReadOnlySpan<WeaponData> span = datas;
+                ReadOnlySpan<byte> bytes = MemoryMarshal.AsBytes(span);
+
+                writer.Write(bytes);
+
+            }
+
+            Debug.Log($"{path}에 data 파일 저장");
+            AssetDatabase.Refresh();
+        }
+    }
+
+    public static void OpenMashal(string path)
+    {
+        string str = "";
+
+        using (FileStream fileStream = new FileStream(path, FileMode.Open))
+        {
+            using (BinaryReader reader = new BinaryReader(fileStream))
+            {
+                int Count  = reader.ReadInt32();
+                
+                int byteSize = Marshal.SizeOf<WeaponData>();
+                int totalBytes = Count + byteSize;
+
+                byte[] buffer = reader.ReadBytes(totalBytes);
+            
+                ReadOnlySpan<byte> span = buffer;
+                ReadOnlySpan<WeaponData> datas = MemoryMarshal.Cast<byte, WeaponData>(span);
+
+                WeaponData[] weaponDatas = datas.ToArray();
+
+                foreach(WeaponData data in weaponDatas)
+                {
+                    str += "Type :" + data.Type + "\n";
+                    str += "Power :" + data.Power + "\n";
+                    str += "Speed :" + data.Speed + "\n";
+                    str += "Durability :" + data.Durability + "\n";
+                    str += "Critical :" + data.Critical + "\n";
+                }
+            }
+            //writer.Close
+            EditorUtility.DisplayDialog("Binary", str, "확인");
+        }
 
     }
- }
+
+}
 
