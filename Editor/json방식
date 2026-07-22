@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
@@ -16,10 +17,39 @@ public struct PlayerData
         this.Hp = Hp;
         this.Attack = Attack;
         this.Defence = Defence;
-
+        
     }
 
 }
+[Serializable]
+public enum Weapontype
+{
+    Sword,
+    Axe,
+    Bow,
+    Wand,
+    Hammer,
+    Max,
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+public struct WeaponData
+{
+    public Weapontype Type;
+    public float Power;     //공격력
+    public float Speed;     //공속
+    public float Durability;//내구도
+    public float Critical;  //크리티컬
+}
+
+
+//[Serializable]
+//public struct PlayerDataMashal
+//{
+//    public float Hp;
+//    public float Attack;
+//    public float Defence;
+//}
 
 public class Unit_Serialization : MonoBehaviour
 {
@@ -61,13 +91,59 @@ public class Unit_Serialization_Editor : Editor
         serializedObject.ApplyModifiedProperties(); //ApplyModifiedProperties : 내부 캐쉬에 변경점을 적용
 
         Unit_Serialization serial = (Unit_Serialization)target;
-        string path = "Assets/UnitTests/02_Serialization";
+        string path = "Assets/UnitTests/02_Serialization/";
 
-        if (GUILayout.Button("1_json"))
+        if (GUILayout.Button("1_Save json"))
             //Debug.Log($"Name : {nameProp.stringValue}, Hp: {HpProp.floatValue}, Power: {AttackProp.floatValue}, Defencd: {DefenceProp.floatValue}");
-            Unit_TestFile.SaveJson(path + "/1_Json.txt", serial.PlayerData);
-        if (GUILayout.Button("2_json"))
-            Unit_TestFile.SaveJson2(path + "/2_Json.txt", serial.PlayerData);
+            Unit_TestFile.SaveJson(path + "1_Json.txt", serial.PlayerData);
+        
+        if (GUILayout.Button("2_Save json"))
+            Unit_TestFile.SaveJson2(path + "2_Json.txt", serial.PlayerData);
+
+        if (GUILayout.Button("Open Json"))
+            Unit_TestFile.OpenJson(path + "2_Json.txt");
+
+        EditorGUILayout.Space();
+
+        if (GUILayout.Button("4_Save json"))
+            Unit_TestFile.SaveBinaryFile(path + "3_Binary.data", serial.PlayerData);
+        if (GUILayout.Button("Read 4_Save"))
+            Unit_TestFile.OpenBinaryFile(path + "3_Binary.data");
+      
+        EditorGUILayout.Space();
+
+
+        if (GUILayout.Button("6_WeaponData"))
+        {
+            int Conut = UnityEngine.Random.Range(5, 10 + 1);
+
+            WeaponData[] datas = new WeaponData[Conut];
+
+            for(int i = 0 ; i < Conut; i++)
+            {
+                WeaponData data = new WeaponData();
+
+                int type = UnityEngine.Random.Range(0, (int)Weapontype.Max);
+                data.Type = (Weapontype)type;
+
+                data.Power = UnityEngine.Random.Range(5.0f, 20.0f);
+                data.Speed = UnityEngine.Random.Range(5.0f, 20.0f);
+                data.Durability = UnityEngine.Random.Range(5.0f, 20.0f);
+                data.Critical = UnityEngine.Random.Range(5.0f, 20.0f);
+
+                datas[i] = data;
+            }
+            Debug.Log($"{Conut}개의 무기데이터 생성");
+        
+            Unit_TestFile.SaveMashal(path + "4_Binary.data", datas);
+        }
+
+        if (GUILayout.Button("7_Open_WeaponData"))
+        {
+            Unit_TestFile.OpenMashal(path + "4_Binary.data");
+        }
+
+
     }
 
 
